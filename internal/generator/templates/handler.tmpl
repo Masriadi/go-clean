@@ -1,0 +1,153 @@
+package v1
+
+import (
+	"{{.Module}}/domain/entities"
+	"{{.Module}}/domain/usecases"
+	"{{.Module}}/presentation/response"
+	"{{.Module}}/utils"
+	"net/http"
+	"strconv"
+
+	"github.com/gin-gonic/gin"
+)
+
+type {{.Entity}}Handler struct {
+	{{.LowerEntity}}UseCase usecases.{{.Entity}}UseCase
+}
+
+func New{{.Entity}}Handler({{.LowerEntity}}UseCase usecases.{{.Entity}}UseCase) *{{.Entity}}Handler {
+	return &{{.Entity}}Handler{
+		{{.LowerEntity}}UseCase: {{.LowerEntity}}UseCase,
+	}
+}
+
+// FindAll : Find all {{.LowerEntity}}s
+func (h *{{.Entity}}Handler) FindAll(ctx *gin.Context) {
+	userID := ctx.GetUint("user_id")
+	actionScope := ctx.GetString("actionScope")
+	paginationParams := utils.ParsePaginationParams(ctx)
+
+	// Set filter by user ID if action scope is own
+	if actionScope == utils.RBAC_SCOPE_OWN {
+		paginationParams.Filter["id"] = []string{strconv.Itoa(int(userID))}
+	}
+
+	// Find all {{.LowerEntity}}s
+	{{.LowerEntity}}s, totalData, err := h.{{.LowerEntity}}UseCase.FindAll(paginationParams)
+	if err != nil {
+		response.Error(ctx, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	response.Success(ctx, http.StatusOK, gin.H{
+		"items":      {{.LowerEntity}}s,
+		"totalItems": totalData,
+	})
+}
+
+// FindByID : Get {{.LowerEntity}} by ID
+func (h *{{.Entity}}Handler) FindByID(ctx *gin.Context) {
+	userID := ctx.GetUint("user_id")
+	actionScope := ctx.GetString("actionScope")
+	id, _ := utils.StringToUint(ctx.Param("id"))
+
+	// Check permission based on action scope
+	if actionScope == utils.RBAC_SCOPE_OWN && id != userID {
+		response.Error(ctx, http.StatusForbidden, "Permission denied")
+		return
+	}
+
+	{{.LowerEntity}}, err := h.{{.LowerEntity}}UseCase.FindByID(id)
+	if err != nil {
+		response.Error(ctx, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	response.Success(ctx, http.StatusOK, {{.LowerEntity}})
+}
+
+// Create : Create a {{.LowerEntity}}
+func (h *{{.Entity}}Handler) Create(ctx *gin.Context) {
+	// Check if user has permission to create user
+	actionScope := ctx.GetString("actionScope")
+
+	if actionScope != utils.RBAC_SCOPE_ALL {
+		response.Error(ctx, http.StatusForbidden, "Permission denied")
+		return
+	}
+
+	// Bind request body to {{.LowerEntity}} entity
+	var {{.LowerEntity}} entities.{{.Entity}}
+	if err := ctx.ShouldBindJSON(&{{.LowerEntity}}); err != nil {
+		response.Error(ctx, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Create {{.LowerEntity}}
+	created{{.Entity}}, err := h.{{.LowerEntity}}UseCase.Create(&{{.LowerEntity}})
+	if err != nil {
+		response.Error(ctx, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	response.Success(ctx, http.StatusCreated, created{{.Entity}})
+}
+
+// Update : Update a {{.LowerEntity}}
+func (h *{{.Entity}}Handler) Update(ctx *gin.Context) {
+	// Get user ID from URL and handle error parsing
+	id, _ := utils.StringToUint(ctx.Param("id"))
+
+	// Get action scope from context
+	actionScope := ctx.GetString("actionScope")
+	userID := ctx.GetUint("user_id")
+
+	// Check permission based on action scope
+	if actionScope == utils.RBAC_SCOPE_OWN && id != userID {
+		response.Error(ctx, http.StatusForbidden, "Permission denied")
+		return
+	}
+
+	// Bind request body to {{.LowerEntity}} entity
+	var {{.LowerEntity}} entities.{{.Entity}}
+	if err := ctx.ShouldBindJSON(&{{.LowerEntity}}); err != nil {
+		response.Error(ctx, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Update {{.LowerEntity}}
+	updated{{.Entity}}, err := h.{{.LowerEntity}}UseCase.Update(id, &{{.LowerEntity}})
+	if err != nil {
+		response.Error(ctx, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	response.Success(ctx, http.StatusOK, updated{{.Entity}})
+}
+
+// Delete : Delete {{.LowerEntity}}s by IDs
+func (h *{{.Entity}}Handler) Delete(ctx *gin.Context) {
+	// Get action scope from context
+	actionScope := ctx.GetString("actionScope")
+
+	// Check permission based on action scope
+	if actionScope != utils.RBAC_SCOPE_ALL {
+		response.Error(ctx, http.StatusForbidden, "Permission denied")
+		return
+	}
+
+	// Bind request body to {{.LowerEntity}} entity
+	var ids []uint
+	if err := ctx.ShouldBindJSON(&ids); err != nil {
+		response.Error(ctx, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	err := h.{{.LowerEntity}}UseCase.Delete(ids)
+	if err != nil {
+		response.Error(ctx, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	response.Success(ctx, http.StatusOK, nil)
+}

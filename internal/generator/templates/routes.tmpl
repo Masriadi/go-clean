@@ -1,0 +1,23 @@
+package routes
+
+import (
+	"{{.Module}}/di"
+	v1 "{{.Module}}/presentation/handlers/http/api/v1"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+func {{.Entity}}Router(r *gin.RouterGroup, db *gorm.DB) {
+	// Dependeny injection for {{.LowerEntity}}
+	{{.LowerEntity}}DepedencyProvider := di.New{{.Entity}}Provider(db)
+	{{.LowerEntity}}Usecase := {{.LowerEntity}}DepedencyProvider.ProvideDb{{.Entity}}UseCase()
+	{{.LowerEntity}}Handler := v1.New{{.Entity}}Handler({{.LowerEntity}}Usecase)
+
+	// {{.Entity}} routes
+	r.GET("/{{.LowerEntity}}s", {{.LowerEntity}}Handler.FindAll)
+	r.GET("/{{.LowerEntity}}s/:id", {{.LowerEntity}}Handler.FindByID)
+	r.POST("/{{.LowerEntity}}s", {{.LowerEntity}}Handler.Create)
+	r.PUT("/{{.LowerEntity}}s/:id", {{.LowerEntity}}Handler.Update)
+	r.DELETE("/{{.LowerEntity}}s", {{.LowerEntity}}Handler.Delete)
+}

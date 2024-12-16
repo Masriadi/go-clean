@@ -1,0 +1,60 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# production
+/build
+
+# tmp
+/tmp/*
+
+# dotenv environment variable files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Local Netlify folder
+.netlify
+
+# IDE directories and files
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Go specific
+/go/bin/
+/go/pkg/
+/go/src/
+
+# Ignore temporary files
+*.tmp
+*.temp
+
+# Ignore executable files
+*.exe
+*.exe~
+
+# Go workspace file
+go.work
+go.work.sum
+
+# Operating system files
+.DS_Store
+Thumbs.db

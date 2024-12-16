@@ -1,0 +1,44 @@
+package usecases
+
+import (
+	"{{.Module}}/domain/entities"
+	"{{.Module}}/domain/types"
+)
+
+type {{.Entity}}UseCase interface {
+	FindAll(paginationParams types.PaginationParams) ([]entities.{{.Entity}}, int, error)
+	FindByID(id int) (*entities.{{.Entity}}, error)
+	Create({{.LowerEntity}} *entities.{{.Entity}}) (*entities.{{.Entity}}, error)
+	Update(id int, {{.LowerEntity}} *entities.{{.Entity}}) (*entities.{{.Entity}}, error)
+	Delete(ids []int) error
+}
+
+type {{.LowerEntity}}UseCase struct {
+	{{.LowerEntity}}Repository entities.{{.Entity}}Repository
+}
+
+func New{{.Entity}}UseCase({{.LowerEntity}}Repository entities.{{.Entity}}Repository) {{.Entity}}UseCase {
+	return &{{.LowerEntity}}UseCase{
+		{{.LowerEntity}}Repository: {{.LowerEntity}}Repository,
+	}
+}
+
+func (u *{{.LowerEntity}}UseCase) FindAll(paginationParams types.PaginationParams) ([]entities.{{.Entity}}, int, error) {
+	return u.{{.LowerEntity}}Repository.FindAll(paginationParams)
+}
+
+func (u *{{.LowerEntity}}UseCase) FindByID(id int) (*entities.{{.Entity}}, error) {
+	return u.{{.LowerEntity}}Repository.FindByID(id)
+}
+
+func (u *{{.LowerEntity}}UseCase) Create({{.LowerEntity}} *entities.{{.Entity}}) (*entities.{{.Entity}}, error) {
+	return u.{{.LowerEntity}}Repository.Create({{.LowerEntity}})
+}
+
+func (u *{{.LowerEntity}}UseCase) Update(id int, {{.LowerEntity}} *entities.{{.Entity}}) (*entities.{{.Entity}}, error) {
+	return u.{{.LowerEntity}}Repository.Update(id, {{.LowerEntity}})
+}
+
+func (u *{{.LowerEntity}}UseCase) Delete(ids []int) error {
+	return u.{{.LowerEntity}}Repository.Delete(ids)
+}

@@ -1,0 +1,85 @@
+package repositories
+
+import (
+	"{{.Module}}/domain/entities"
+	"{{.Module}}/domain/types"
+	"{{.Module}}/utils"
+
+	"gorm.io/gorm"
+)
+
+type {{.LowerEntity}}Repository struct {
+	db *gorm.DB
+}
+
+func New{{.Entity}}Repository(db *gorm.DB) entities.{{.Entity}}Repository {
+	return &{{.LowerEntity}}Repository{
+		db: db,
+	}
+}
+
+// FindAll : Find all {{.LowerEntity}}s with pagination and search
+func (r *{{.LowerEntity}}Repository) FindAll(params types.PaginationParams) ([]entities.{{.Entity}}, int, error) {
+	var {{.LowerEntity}}s []entities.{{.Entity}}
+	var totalData int64
+
+	query := r.db.Model(&entities.{{.Entity}}{})
+
+	// Filter by params.Filter
+	if len(params.Filter) > 0 {
+		for key, value := range params.Filter {
+			query = query.Where(key+" IN (?)", value)
+		}
+	}
+
+	// Search by params.SearchTerm
+	if params.SearchTerm != "" {
+		query = query.Where("title LIKE ?",
+			"%"+params.SearchTerm+"%")
+	}
+
+	// Count total data
+	if err := query.Count(&totalData).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// Query all {{.LowerEntity}}s with pagination
+	err := query.Order("id DESC").Scopes(utils.Paginate(params)).Find(&{{.LowerEntity}}s)
+	if err.Error != nil {
+		return nil, 0, err.Error
+	}
+
+	return {{.LowerEntity}}s, int(totalData), nil
+}
+
+// FindByID : Get {{.LowerEntity}} by ID
+func (r *{{.LowerEntity}}Repository) FindByID(id int) (*entities.{{.Entity}}, error) {
+	var {{.LowerEntity}} entities.{{.Entity}}
+
+	err := r.db.Model(&entities.{{.Entity}}{}).
+		Where("id = ?", id).
+		First(&{{.LowerEntity}}).Error
+
+	return &{{.LowerEntity}}, err
+}
+
+// Create : Create new {{.LowerEntity}}
+func (r *{{.LowerEntity}}Repository) Create({{.LowerEntity}} *entities.{{.Entity}}) (*entities.{{.Entity}}, error) {
+	err := r.db.Create({{.LowerEntity}}).Error
+	return {{.LowerEntity}}, err
+}
+
+// Update : Update {{.LowerEntity}} by ID
+func (r *{{.LowerEntity}}Repository) Update(id int, {{.LowerEntity}} *entities.{{.Entity}}) (*entities.{{.Entity}}, error) {
+	err := r.db.Model(&entities.{{.Entity}}{}).
+		Where("id = ?", id).
+		Updates({{.LowerEntity}}).Error
+
+	return {{.LowerEntity}}, err
+}
+
+// Delete : Delete {{.LowerEntity}} by IDs
+func (r *{{.LowerEntity}}Repository) Delete(ids []int) error {
+	err := r.db.Where("id IN (?)", ids).Delete(&entities.{{.Entity}}{}).Error
+	return err
+}
