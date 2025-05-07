@@ -53,7 +53,7 @@ func (r *{{.LowerEntity}}Repository) FindAll(params types.PaginationParams) ([]e
 }
 
 // FindByID : Get {{.LowerEntity}} by ID
-func (r *{{.LowerEntity}}Repository) FindByID(id int) (*entities.{{.Entity}}, error) {
+func (r *{{.LowerEntity}}Repository) FindByID(id uint) (*entities.{{.Entity}}, error) {
 	var {{.LowerEntity}} entities.{{.Entity}}
 
 	err := r.db.Model(&entities.{{.Entity}}{}).
@@ -70,7 +70,7 @@ func (r *{{.LowerEntity}}Repository) Create({{.LowerEntity}} *entities.{{.Entity
 }
 
 // Update : Update {{.LowerEntity}} by ID
-func (r *{{.LowerEntity}}Repository) Update(id int, {{.LowerEntity}} *entities.{{.Entity}}) (*entities.{{.Entity}}, error) {
+func (r *{{.LowerEntity}}Repository) Update(id uint, {{.LowerEntity}} *entities.{{.Entity}}) (*entities.{{.Entity}}, error) {
 	err := r.db.Model(&entities.{{.Entity}}{}).
 		Where("id = ?", id).
 		Updates({{.LowerEntity}}).Error
@@ -79,7 +79,7 @@ func (r *{{.LowerEntity}}Repository) Update(id int, {{.LowerEntity}} *entities.{
 }
 
 // Delete : Delete {{.LowerEntity}} by IDs
-func (r *{{.LowerEntity}}Repository) Delete(ids []int) error {
+func (r *{{.LowerEntity}}Repository) Delete(ids []uint) error {
 	err := r.db.Where("id IN (?)", ids).Delete(&entities.{{.Entity}}{}).Error
 	return err
 }

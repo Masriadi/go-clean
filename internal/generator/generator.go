@@ -18,6 +18,9 @@ import (
 //go:embed templates/repository.tmpl
 var repositoryTemplate string
 
+//go:embed templates/di.tmpl
+var diTemplate string
+
 //go:embed templates/entity.tmpl
 var entityTemplate string
 
@@ -39,6 +42,7 @@ type TemplateInfo struct {
 // Define directory constants
 const (
 	repositoriesDir = "data/repositories"
+	diDir           = "di"
 	entitiesDir     = "domain/entities"
 	usecasesDir     = "domain/usecases"
 	handlersDir     = "presentation/handlers/http/api/v1"
@@ -51,17 +55,25 @@ func GenerateStructure(entityName string, moduleName string) error {
 		return fmt.Errorf("entityName and moduleName cannot be empty")
 	}
 
-	// Convert entity name to title case
-	entityName = cases.Title(language.English).String(entityName)
-
 	// Show log message
 	utils.LogInfo(fmt.Sprintf("Generating structure for entity: %s", entityName))
 
+	// Convert entity name to title case
+	entityName = utils.StringToEntityName(entityName)
+
 	// Convert entity name to lowercase
-	lowerEntityName := strings.ToLower(entityName)
+	instanceEntityName := utils.StringToInstanceName(entityName)
+
+	// Convert entity name to directory name
+	fileName := utils.StringToFileName(entityName)
+
+	// log.Printf("entityName : %s\n", entityName)
+	// log.Printf("instanceEntityName : %s\n", instanceEntityName)
+	// log.Printf("fileName : %s\n", fileName)
 
 	directories := []string{
 		repositoriesDir,
+		diDir,
 		entitiesDir,
 		usecasesDir,
 		handlersDir,
@@ -75,11 +87,12 @@ func GenerateStructure(entityName string, moduleName string) error {
 
 	// Define templates
 	templates := []TemplateInfo{
-		{fmt.Sprintf("%s/%s_repository.go", repositoriesDir, lowerEntityName), repositoryTemplate},
-		{fmt.Sprintf("%s/%s.go", entitiesDir, lowerEntityName), entityTemplate},
-		{fmt.Sprintf("%s/%s_usecase.go", usecasesDir, lowerEntityName), usecaseTemplate},
-		{fmt.Sprintf("%s/%s_handler.go", handlersDir, lowerEntityName), handlerTemplate},
-		{fmt.Sprintf("%s/%s_routes.go", routesDir, lowerEntityName), routesTemplate},
+		{fmt.Sprintf("%s/%s_repository.go", repositoriesDir, fileName), repositoryTemplate},
+		{fmt.Sprintf("%s/%s_di.go", diDir, fileName), diTemplate},
+		{fmt.Sprintf("%s/%s.go", entitiesDir, fileName), entityTemplate},
+		{fmt.Sprintf("%s/%s_usecase.go", usecasesDir, fileName), usecaseTemplate},
+		{fmt.Sprintf("%s/%s_handler.go", handlersDir, fileName), handlerTemplate},
+		{fmt.Sprintf("%s/%s_routes.go", routesDir, fileName), routesTemplate},
 	}
 
 	// Generate files from templates
@@ -87,7 +100,7 @@ func GenerateStructure(entityName string, moduleName string) error {
 		if err := generateFile(
 			tmplInfo.OutputPath,
 			tmplInfo.Content,
-			lowerEntityName,
+			instanceEntityName,
 			entityName,
 			moduleName,
 		); err != nil {
@@ -95,7 +108,7 @@ func GenerateStructure(entityName string, moduleName string) error {
 		}
 	}
 
-	utils.LogSuccess(fmt.Sprintf("Structure for '%s' generated successfully.", lowerEntityName))
+	utils.LogSuccess(fmt.Sprintf("Structure for '%s' generated successfully.", instanceEntityName))
 	return nil
 }
 
@@ -113,7 +126,7 @@ func createDirectories(directories []string) error {
 func generateFile(
 	outputPathTemplate,
 	templateContent,
-	lowerEntityName string,
+	instanceEntityName string,
 	entityName string,
 	moduleName string,
 ) error {
@@ -130,7 +143,7 @@ func generateFile(
 	}
 
 	var fileNameBuf strings.Builder
-	if err := fileNameTmpl.Execute(&fileNameBuf, map[string]string{"Entity": lowerEntityName}); err != nil {
+	if err := fileNameTmpl.Execute(&fileNameBuf, map[string]string{"Entity": instanceEntityName}); err != nil {
 		return fmt.Errorf("error generating filename: %w", err)
 	}
 	outPath := fileNameBuf.String()
@@ -159,7 +172,7 @@ func generateFile(
 
 	// Execute template
 	data := map[string]string{
-		"LowerEntity": lowerEntityName,
+		"LowerEntity": instanceEntityName,
 		"Entity":      entityName,
 		"Module":      moduleName,
 	}

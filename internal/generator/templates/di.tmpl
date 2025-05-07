@@ -1,0 +1,17 @@
+package di
+
+import (
+	"{{.Module}}/data/repositories"
+	"{{.Module}}/domain/usecases"
+	v1 "{{.Module}}/presentation/handlers/http/api/v1"
+
+	"gorm.io/gorm"
+)
+
+func Initialize{{.Entity}}Handler(db *gorm.DB) *v1.{{.Entity}}Handler {
+	{{.LowerEntity}}Repository := repositories.New{{.Entity}}Repository(db)
+	{{.LowerEntity}}UseCase := usecases.New{{.Entity}}UseCase({{.LowerEntity}}Repository)
+	{{.LowerEntity}}Handler := v1.New{{.Entity}}Handler({{.LowerEntity}}UseCase)
+
+	return {{.LowerEntity}}Handler
+}
