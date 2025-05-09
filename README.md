@@ -9,3 +9,9 @@ go get github.com/Masriadi/go-clean
 // Install the package
 go install github.com/Masriadi/go-clean/cmd/go-clean@latest
 ```
+
+install local package :
+
+```bash
+go install ./cmd/go-clean
+```

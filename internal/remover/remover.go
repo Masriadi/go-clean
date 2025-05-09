@@ -18,6 +18,7 @@ func RemoveStructure(entityName string) error {
 	// Daftar file yang akan dihapus
 	files := []string{
 		filepath.Join("data/repositories", fmt.Sprintf("%s_repository.go", entityName)),
+		filepath.Join("di", fmt.Sprintf("%s_di.go", entityName)),
 		filepath.Join("domain/entities", fmt.Sprintf("%s.go", entityName)),
 		filepath.Join("domain/usecases", fmt.Sprintf("%s_usecase.go", entityName)),
 		filepath.Join("presentation/handlers/http/api/v1", fmt.Sprintf("%s_handler.go", entityName)),

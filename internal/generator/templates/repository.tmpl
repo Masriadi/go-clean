@@ -26,11 +26,7 @@ func (r *{{.LowerEntity}}Repository) FindAll(params types.PaginationParams) ([]e
 	query := r.db.Model(&entities.{{.Entity}}{})
 
 	// Filter by params.Filter
-	if len(params.Filter) > 0 {
-		for key, value := range params.Filter {
-			query = query.Where(key+" IN (?)", value)
-		}
-	}
+	query = utils.ApplyFilters(query, params.Filter)
 
 	// Search by params.SearchTerm
 	if params.SearchTerm != "" {
@@ -44,9 +40,10 @@ func (r *{{.LowerEntity}}Repository) FindAll(params types.PaginationParams) ([]e
 	}
 
 	// Query all {{.LowerEntity}}s with pagination
-	err := query.Order("id DESC").Scopes(utils.Paginate(params)).Find(&{{.LowerEntity}}s)
-	if err.Error != nil {
-		return nil, 0, err.Error
+	if err := query.Order("id DESC").
+		Scopes(utils.Paginate(params)).
+		Find(&{{.LowerEntity}}s).Error; err != nil {
+		return nil, 0, err
 	}
 
 	return {{.LowerEntity}}s, int(totalData), nil
@@ -71,11 +68,18 @@ func (r *{{.LowerEntity}}Repository) Create({{.LowerEntity}} *entities.{{.Entity
 
 // Update : Update {{.LowerEntity}} by ID
 func (r *{{.LowerEntity}}Repository) Update(id uint, {{.LowerEntity}} *entities.{{.Entity}}) (*entities.{{.Entity}}, error) {
-	err := r.db.Model(&entities.{{.Entity}}{}).
+	if err := r.db.Model(&entities.{{.Entity}}{}).
 		Where("id = ?", id).
-		Updates({{.LowerEntity}}).Error
+		Updates({{.LowerEntity}}).Error; err != nil {
+		return nil, err
+	}
 
-	return {{.LowerEntity}}, err
+	var updated{{.Entity}} entities.{{.Entity}}
+	if err := r.db.First(&updated{{.Entity}}, id).Error; err != nil {
+		return nil, err
+	}
+
+	return &updated{{.Entity}}, nil
 }
 
 // Delete : Delete {{.LowerEntity}} by IDs
