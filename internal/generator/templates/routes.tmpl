@@ -9,12 +9,12 @@ import (
 
 func {{.Entity}}Router(r *gin.RouterGroup, db *gorm.DB) {
 	// {{.Entity}} handler initialization
-	{{.LowerEntity}}Handler := di.Initialize{{.Entity}}Handler(db)
+	handler := di.Initialize{{.Entity}}Handler(db)
 
 	// {{.Entity}} routes
-	r.GET("/{{.LowerEntity}}", {{.LowerEntity}}Handler.FindAll)
-	r.GET("/{{.LowerEntity}}/:id", {{.LowerEntity}}Handler.FindByID)
-	r.POST("/{{.LowerEntity}}", {{.LowerEntity}}Handler.Create)
-	r.PUT("/{{.LowerEntity}}/:id", {{.LowerEntity}}Handler.Update)
-	r.DELETE("/{{.LowerEntity}}", {{.LowerEntity}}Handler.Delete)
+	r.GET("/{{.DirName}}", handler.FindAll)
+	r.GET("/{{.DirName}}/:id", handler.FindByID)
+	r.POST("/{{.DirName}}", handler.Create)
+	r.PUT("/{{.DirName}}/:id", handler.Update)
+	r.DELETE("/{{.DirName}}", handler.Delete)
 }

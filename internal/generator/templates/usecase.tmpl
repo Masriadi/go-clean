@@ -7,10 +7,10 @@ import (
 
 type {{.Entity}}UseCase interface {
 	FindAll(paginationParams types.PaginationParams) ([]entities.{{.Entity}}, int, error)
-	FindByID(id uint) (*entities.{{.Entity}}, error)
+	FindByID(id types.ID) (*entities.{{.Entity}}, error)
 	Create({{.LowerEntity}} *entities.{{.Entity}}) (*entities.{{.Entity}}, error)
-	Update(id uint, {{.LowerEntity}} *entities.{{.Entity}}) (*entities.{{.Entity}}, error)
-	Delete(ids []uint) error
+	Update(id types.ID, {{.LowerEntity}} *entities.{{.Entity}}) (*entities.{{.Entity}}, error)
+	Delete(ids []types.ID) error
 }
 
 type {{.LowerEntity}}UseCase struct {
@@ -27,7 +27,7 @@ func (u *{{.LowerEntity}}UseCase) FindAll(paginationParams types.PaginationParam
 	return u.{{.LowerEntity}}Repository.FindAll(paginationParams)
 }
 
-func (u *{{.LowerEntity}}UseCase) FindByID(id uint) (*entities.{{.Entity}}, error) {
+func (u *{{.LowerEntity}}UseCase) FindByID(id types.ID) (*entities.{{.Entity}}, error) {
 	return u.{{.LowerEntity}}Repository.FindByID(id)
 }
 
@@ -35,10 +35,10 @@ func (u *{{.LowerEntity}}UseCase) Create({{.LowerEntity}} *entities.{{.Entity}})
 	return u.{{.LowerEntity}}Repository.Create({{.LowerEntity}})
 }
 
-func (u *{{.LowerEntity}}UseCase) Update(id uint, {{.LowerEntity}} *entities.{{.Entity}}) (*entities.{{.Entity}}, error) {
+func (u *{{.LowerEntity}}UseCase) Update(id types.ID, {{.LowerEntity}} *entities.{{.Entity}}) (*entities.{{.Entity}}, error) {
 	return u.{{.LowerEntity}}Repository.Update(id, {{.LowerEntity}})
 }
 
-func (u *{{.LowerEntity}}UseCase) Delete(ids []uint) error {
+func (u *{{.LowerEntity}}UseCase) Delete(ids []types.ID) error {
 	return u.{{.LowerEntity}}Repository.Delete(ids)
 }

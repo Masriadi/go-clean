@@ -67,6 +67,9 @@ func GenerateStructure(entityName string, moduleName string) error {
 	// Convert entity name to directory name
 	fileName := utils.StringToFileName(entityName)
 
+	// Convert entity name to directory name (kebab-case)
+	dirName := utils.StringToDirName(entityName)
+
 	// log.Printf("entityName : %s\n", entityName)
 	// log.Printf("instanceEntityName : %s\n", instanceEntityName)
 	// log.Printf("fileName : %s\n", fileName)
@@ -103,6 +106,7 @@ func GenerateStructure(entityName string, moduleName string) error {
 			instanceEntityName,
 			entityName,
 			moduleName,
+			dirName,
 		); err != nil {
 			return err
 		}
@@ -129,6 +133,7 @@ func generateFile(
 	instanceEntityName string,
 	entityName string,
 	moduleName string,
+	dirname string,
 ) error {
 	funcMap := template.FuncMap{
 		"lower": strings.ToLower,
@@ -175,6 +180,7 @@ func generateFile(
 		"LowerEntity": instanceEntityName,
 		"Entity":      entityName,
 		"Module":      moduleName,
+		"DirName": dirname,
 	}
 	if err := tmpl.Execute(outFile, data); err != nil {
 		return fmt.Errorf("error writing to file %s: %w", outPath, err)

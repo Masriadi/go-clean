@@ -6,7 +6,7 @@ import (
 )
 
 type {{.Entity}} struct {
-	ID          uint         `json:"id" gorm:"primaryKey;autoIncrement"`
+	ID          types.ID     `json:"id" gorm:"primaryKey;autoIncrement"`
 	Name        string       `json:"name" gorm:"uniqueIndex;size:100;not null"`
 	Status      *bool        `json:"status" gorm:"type:boolean;default:false"`
 	CreatedAt   time.Time    `json:"created_at" gorm:"autoCreateTime"`
@@ -19,8 +19,8 @@ func ({{.Entity}}) TableName() string {
 
 type {{.Entity}}Repository interface {
 	FindAll(paginationParams types.PaginationParams) ([]{{.Entity}}, int, error)
-	FindByID(id uint) (*{{.Entity}}, error)
+	FindByID(id types.ID) (*{{.Entity}}, error)
 	Create({{.LowerEntity}} *{{.Entity}}) (*{{.Entity}}, error)
-	Update(id uint, {{.LowerEntity}} *{{.Entity}}) (*{{.Entity}}, error)
-	Delete(ids []uint) error
+	Update(id types.ID, {{.LowerEntity}} *{{.Entity}}) (*{{.Entity}}, error)
+	Delete(ids []types.ID) error
 }

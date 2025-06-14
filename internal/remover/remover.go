@@ -13,16 +13,16 @@ import (
 // RemoveStructure removes the files for the given entity name
 func RemoveStructure(entityName string) error {
 	// Normalisasi nama entity (lowercase)
-	entityName = strings.ToLower(entityName)
+	dirName := utils.StringToFileName(entityName)
 
 	// Daftar file yang akan dihapus
 	files := []string{
-		filepath.Join("data/repositories", fmt.Sprintf("%s_repository.go", entityName)),
-		filepath.Join("di", fmt.Sprintf("%s_di.go", entityName)),
-		filepath.Join("domain/entities", fmt.Sprintf("%s.go", entityName)),
-		filepath.Join("domain/usecases", fmt.Sprintf("%s_usecase.go", entityName)),
-		filepath.Join("presentation/handlers/http/api/v1", fmt.Sprintf("%s_handler.go", entityName)),
-		filepath.Join("presentation/routes", fmt.Sprintf("%s_routes.go", entityName)),
+		filepath.Join("data/repositories", fmt.Sprintf("%s_repository.go", dirName)),
+		filepath.Join("di", fmt.Sprintf("%s_di.go", dirName)),
+		filepath.Join("domain/entities", fmt.Sprintf("%s.go", dirName)),
+		filepath.Join("domain/usecases", fmt.Sprintf("%s_usecase.go", dirName)),
+		filepath.Join("presentation/handlers/http/api/v1", fmt.Sprintf("%s_handler.go", dirName)),
+		filepath.Join("presentation/routes", fmt.Sprintf("%s_routes.go", dirName)),
 	}
 
 	// Tanyakan konfirmasi sebelum menghapus

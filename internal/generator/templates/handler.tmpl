@@ -1,12 +1,12 @@
 package v1
 
 import (
+	"net/http"
 	"{{.Module}}/domain/entities"
+	"{{.Module}}/domain/types"
 	"{{.Module}}/domain/usecases"
 	"{{.Module}}/presentation/response"
 	"{{.Module}}/utils"
-	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -23,13 +23,13 @@ func New{{.Entity}}Handler({{.LowerEntity}}UseCase usecases.{{.Entity}}UseCase) 
 
 // FindAll : Find all {{.LowerEntity}}s
 func (h *{{.Entity}}Handler) FindAll(ctx *gin.Context) {
-	userID := ctx.GetUint("user_id")
+	userID := ctx.GetString("user_id")
 	actionScope := ctx.GetString("actionScope")
 	paginationParams := utils.ParsePaginationParams(ctx)
 
 	// Set filter by user ID if action scope is own
 	if actionScope == utils.RBAC_SCOPE_OWN {
-		paginationParams.Filter["id"] = []string{strconv.Itoa(int(userID))}
+		paginationParams.Filter["id"] = []string{userID}
 	}
 
 	// Find all {{.LowerEntity}}s
@@ -47,9 +47,9 @@ func (h *{{.Entity}}Handler) FindAll(ctx *gin.Context) {
 
 // FindByID : Get {{.LowerEntity}} by ID
 func (h *{{.Entity}}Handler) FindByID(ctx *gin.Context) {
-	userID := ctx.GetUint("user_id")
+	userID := ctx.GetString("user_id")
 	actionScope := ctx.GetString("actionScope")
-	id, _ := utils.StringToUint(ctx.Param("id"))
+	id := ctx.Param("id")
 
 	// Check permission based on action scope
 	if actionScope == utils.RBAC_SCOPE_OWN && id != userID {
@@ -57,7 +57,7 @@ func (h *{{.Entity}}Handler) FindByID(ctx *gin.Context) {
 		return
 	}
 
-	{{.LowerEntity}}, err := h.{{.LowerEntity}}UseCase.FindByID(id)
+	{{.LowerEntity}}, err := h.{{.LowerEntity}}UseCase.FindByID(types.ID(id))
 	if err != nil {
 		response.Error(ctx, http.StatusInternalServerError, err.Error())
 		return
@@ -96,11 +96,11 @@ func (h *{{.Entity}}Handler) Create(ctx *gin.Context) {
 // Update : Update a {{.LowerEntity}}
 func (h *{{.Entity}}Handler) Update(ctx *gin.Context) {
 	// Get user ID from URL and handle error parsing
-	id, _ := utils.StringToUint(ctx.Param("id"))
+	id := ctx.Param("id")
 
 	// Get action scope from context
 	actionScope := ctx.GetString("actionScope")
-	userID := ctx.GetUint("user_id")
+	userID := ctx.GetString("user_id")
 
 	// Check permission based on action scope
 	if actionScope == utils.RBAC_SCOPE_OWN && id != userID {
@@ -116,7 +116,7 @@ func (h *{{.Entity}}Handler) Update(ctx *gin.Context) {
 	}
 
 	// Update {{.LowerEntity}}
-	updated{{.Entity}}, err := h.{{.LowerEntity}}UseCase.Update(id, &{{.LowerEntity}})
+	updated{{.Entity}}, err := h.{{.LowerEntity}}UseCase.Update(types.ID(id), &{{.LowerEntity}})
 	if err != nil {
 		response.Error(ctx, http.StatusInternalServerError, err.Error())
 		return
@@ -137,7 +137,7 @@ func (h *{{.Entity}}Handler) Delete(ctx *gin.Context) {
 	}
 
 	// Bind request body to {{.LowerEntity}} entity
-	var ids []uint
+	var ids []types.ID
 	if err := ctx.ShouldBindJSON(&ids); err != nil {
 		response.Error(ctx, http.StatusBadRequest, err.Error())
 		return
