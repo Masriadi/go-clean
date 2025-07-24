@@ -1,9 +1,9 @@
 package repositories
 
 import (
+	"{{.Module}}/data/sources/local"
 	"{{.Module}}/domain/entities"
 	"{{.Module}}/domain/types"
-	"{{.Module}}/utils"
 
 	"gorm.io/gorm"
 )
@@ -18,76 +18,32 @@ func New{{.Entity}}Repository(db *gorm.DB) entities.{{.Entity}}Repository {
 	}
 }
 
-// FindAll : Find all {{.LowerEntity}}s with pagination and search
+// FindAll : Find all pnsPenghargaans with pagination and search
 func (r *{{.LowerEntity}}Repository) FindAll(params types.PaginationParams) ([]entities.{{.Entity}}, int, error) {
-	var {{.LowerEntity}}s []entities.{{.Entity}}
-	var totalData int64
-
-	query := r.db.Model(&entities.{{.Entity}}{})
-
-	// Filter by params.Filter
-	if len(params.Filter) > 0 {
-		for key, value := range params.Filter {
-			query = query.Where(key+" IN (?)", value)
-		}
-	}
-
-	// Search by params.SearchTerm
-	if params.SearchTerm != "" {
-		query = query.Where("title LIKE ?",
-			"%"+params.SearchTerm+"%")
-	}
-
-	// Count total data
-	if err := query.Count(&totalData).Error; err != nil {
-		return nil, 0, err
-	}
-
-	// Query all {{.LowerEntity}}s with pagination
-	if err := query.Order("id DESC").
-		Scopes(utils.Paginate(params)).
-		Find(&{{.LowerEntity}}s).Error; err != nil {
-		return nil, 0, err
-	}
-
-	return {{.LowerEntity}}s, int(totalData), nil
+	return local.FindAll[entities.{{.Entity}}](
+		r.db,
+		&entities.{{.Entity}}{},
+		params,
+		[]string{"title"},
+	)
 }
 
 // FindByID : Get {{.LowerEntity}} by ID
 func (r *{{.LowerEntity}}Repository) FindByID(id types.ID) (*entities.{{.Entity}}, error) {
-	var {{.LowerEntity}} entities.{{.Entity}}
-
-	err := r.db.Model(&entities.{{.Entity}}{}).
-		Where("id = ?", id).
-		First(&{{.LowerEntity}}).Error
-
-	return &{{.LowerEntity}}, err
+	return local.FindByID[entities.{{.Entity}}](r.db, &entities.{{.Entity}}{}, id)
 }
 
 // Create : Create new {{.LowerEntity}}
 func (r *{{.LowerEntity}}Repository) Create({{.LowerEntity}} *entities.{{.Entity}}) (*entities.{{.Entity}}, error) {
-	err := r.db.Create({{.LowerEntity}}).Error
-	return {{.LowerEntity}}, err
+	return local.Create(r.db, {{.LowerEntity}})
 }
 
 // Update : Update {{.LowerEntity}} by ID
 func (r *{{.LowerEntity}}Repository) Update(id types.ID, {{.LowerEntity}} *entities.{{.Entity}}) (*entities.{{.Entity}}, error) {
-	if err := r.db.Model(&entities.{{.Entity}}{}).
-		Where("id = ?", id).
-		Updates({{.LowerEntity}}).Error; err != nil {
-		return nil, err
-	}
-
-	var updated{{.Entity}} entities.{{.Entity}}
-	if err := r.db.First(&updated{{.Entity}}, id).Error; err != nil {
-		return nil, err
-	}
-
-	return &updated{{.Entity}}, nil
+	return local.UpdateAndReturn(r.db, &entities.{{.Entity}}{}, id, {{.LowerEntity}})
 }
 
-// Delete : Delete {{.LowerEntity}} by IDs
-func (r *{{.LowerEntity}}Repository) Delete(ids []types.ID) error {
-	err := r.db.Where("id IN (?)", ids).Delete(&entities.{{.Entity}}{}).Error
-	return err
+// Delete : Delete {{.LowerEntity}} by ID
+func (r *{{.LowerEntity}}Repository) Delete(id types.ID) error {
+	return local.Delete(r.db, &entities.{{.Entity}}{}, id)
 }

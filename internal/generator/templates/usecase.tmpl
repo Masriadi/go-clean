@@ -10,7 +10,7 @@ type {{.Entity}}UseCase interface {
 	FindByID(id types.ID) (*entities.{{.Entity}}, error)
 	Create({{.LowerEntity}} *entities.{{.Entity}}) (*entities.{{.Entity}}, error)
 	Update(id types.ID, {{.LowerEntity}} *entities.{{.Entity}}) (*entities.{{.Entity}}, error)
-	Delete(ids []types.ID) error
+	Delete(id types.ID) error
 }
 
 type {{.LowerEntity}}UseCase struct {
@@ -39,6 +39,6 @@ func (u *{{.LowerEntity}}UseCase) Update(id types.ID, {{.LowerEntity}} *entities
 	return u.{{.LowerEntity}}Repository.Update(id, {{.LowerEntity}})
 }
 
-func (u *{{.LowerEntity}}UseCase) Delete(ids []types.ID) error {
-	return u.{{.LowerEntity}}Repository.Delete(ids)
+func (u *{{.LowerEntity}}UseCase) Delete(id types.ID) error {
+	return u.{{.LowerEntity}}Repository.Delete(id)
 }

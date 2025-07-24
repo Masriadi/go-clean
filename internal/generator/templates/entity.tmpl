@@ -22,5 +22,5 @@ type {{.Entity}}Repository interface {
 	FindByID(id types.ID) (*{{.Entity}}, error)
 	Create({{.LowerEntity}} *{{.Entity}}) (*{{.Entity}}, error)
 	Update(id types.ID, {{.LowerEntity}} *{{.Entity}}) (*{{.Entity}}, error)
-	Delete(ids []types.ID) error
+	Delete(id types.ID) error
 }

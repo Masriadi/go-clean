@@ -125,7 +125,7 @@ func (h *{{.Entity}}Handler) Update(ctx *gin.Context) {
 	response.Success(ctx, http.StatusOK, updated{{.Entity}})
 }
 
-// Delete : Delete {{.LowerEntity}}s by IDs
+// Delete : Delete {{.LowerEntity}} by ID
 func (h *{{.Entity}}Handler) Delete(ctx *gin.Context) {
 	// Get action scope from context
 	actionScope := ctx.GetString("actionScope")
@@ -136,14 +136,10 @@ func (h *{{.Entity}}Handler) Delete(ctx *gin.Context) {
 		return
 	}
 
-	// Bind request body to {{.LowerEntity}} entity
-	var ids []types.ID
-	if err := ctx.ShouldBindJSON(&ids); err != nil {
-		response.Error(ctx, http.StatusBadRequest, err.Error())
-		return
-	}
+	// Get ID from URL parameter
+	id := ctx.Param("id")
 
-	err := h.{{.LowerEntity}}UseCase.Delete(ids)
+	err := h.{{.LowerEntity}}UseCase.Delete(types.ID(id))
 	if err != nil {
 		response.Error(ctx, http.StatusInternalServerError, err.Error())
 		return
