@@ -1,7 +1,6 @@
 package repositories
 
 import (
-	"{{.Module}}/data/sources/local"
 	"{{.Module}}/domain/entities"
 	"{{.Module}}/domain/types"
 
@@ -18,32 +17,48 @@ func New{{.Entity}}Repository(db *gorm.DB) entities.{{.Entity}}Repository {
 	}
 }
 
-// FindAll : Find all pnsPenghargaans with pagination and search
+// FindAll : Find all {{.LowerEntity}}s with pagination and search
 func (r *{{.LowerEntity}}Repository) FindAll(params types.PaginationParams) ([]entities.{{.Entity}}, int, error) {
-	return local.FindAll[entities.{{.Entity}}](
-		r.db,
-		&entities.{{.Entity}}{},
-		params,
-		[]string{"title"},
-	)
+	return FindAll(FindAllOptions[entities.{{.Entity}}]{
+		DB:           r.db,
+		Model:        &entities.{{.Entity}}{},
+		Params:       params,
+		SearchFields: []string{"name"},
+	})
 }
 
 // FindByID : Get {{.LowerEntity}} by ID
 func (r *{{.LowerEntity}}Repository) FindByID(id types.ID) (*entities.{{.Entity}}, error) {
-	return local.FindByID[entities.{{.Entity}}](r.db, &entities.{{.Entity}}{}, id)
+	return FindByID(FindByIDOptions[entities.{{.Entity}}]{
+		DB:    r.db,
+		Model: &entities.{{.Entity}}{},
+		ID:    id,
+	})
 }
 
 // Create : Create new {{.LowerEntity}}
 func (r *{{.LowerEntity}}Repository) Create({{.LowerEntity}} *entities.{{.Entity}}) (*entities.{{.Entity}}, error) {
-	return local.Create(r.db, {{.LowerEntity}})
+	return Create(CreateOptions[entities.{{.Entity}}]{
+		DB:   r.db,
+		Data: {{.LowerEntity}},
+	})
 }
 
 // Update : Update {{.LowerEntity}} by ID
 func (r *{{.LowerEntity}}Repository) Update(id types.ID, {{.LowerEntity}} *entities.{{.Entity}}) (*entities.{{.Entity}}, error) {
-	return local.UpdateAndReturn(r.db, &entities.{{.Entity}}{}, id, {{.LowerEntity}})
+	return UpdateAndReturn(UpdateAndReturnOptions[entities.{{.Entity}}]{
+		DB:    r.db,
+		Model: &entities.{{.Entity}}{},
+		ID:    id,
+		Data:  {{.LowerEntity}},
+	})
 }
 
 // Delete : Delete {{.LowerEntity}} by ID
 func (r *{{.LowerEntity}}Repository) Delete(id types.ID) error {
-	return local.Delete(r.db, &entities.{{.Entity}}{}, id)
+	return Delete(DeleteOptions{
+		DB:    r.db,
+		Model: &entities.{{.Entity}}{},
+		ID:    id,
+	})
 }

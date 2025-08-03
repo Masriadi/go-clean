@@ -3,42 +3,84 @@ package usecases
 import (
 	"{{.Module}}/domain/entities"
 	"{{.Module}}/domain/types"
+	"{{.Module}}/utils"
 )
 
 type {{.Entity}}UseCase interface {
-	FindAll(paginationParams types.PaginationParams) ([]entities.{{.Entity}}, int, error)
-	FindByID(id types.ID) (*entities.{{.Entity}}, error)
-	Create({{.LowerEntity}} *entities.{{.Entity}}) (*entities.{{.Entity}}, error)
-	Update(id types.ID, {{.LowerEntity}} *entities.{{.Entity}}) (*entities.{{.Entity}}, error)
-	Delete(id types.ID) error
+	FindAll(payload types.FindAllPayload) ([]entities.{{.Entity}}, int, error)
+	FindByID(payload types.FindByIDPayload) (*entities.{{.Entity}}, error)
+	Create(payload types.CreatePayload[entities.{{.Entity}}]) (*entities.{{.Entity}}, error)
+	Update(payload types.UpdatePayload[entities.{{.Entity}}]) (*entities.{{.Entity}}, error)
+	Delete(payload types.DeletePayload) error
 }
 
 type {{.LowerEntity}}UseCase struct {
-	{{.LowerEntity}}Repository entities.{{.Entity}}Repository
+	BaseUseCase
+	repo entities.{{.Entity}}Repository
 }
 
-func New{{.Entity}}UseCase({{.LowerEntity}}Repository entities.{{.Entity}}Repository) {{.Entity}}UseCase {
+func New{{.Entity}}UseCase(repo entities.{{.Entity}}Repository) {{.Entity}}UseCase {
 	return &{{.LowerEntity}}UseCase{
-		{{.LowerEntity}}Repository: {{.LowerEntity}}Repository,
+		repo: repo,
 	}
 }
 
-func (u *{{.LowerEntity}}UseCase) FindAll(paginationParams types.PaginationParams) ([]entities.{{.Entity}}, int, error) {
-	return u.{{.LowerEntity}}Repository.FindAll(paginationParams)
+// FindAll : Retrieve all records with filtering based on user scope
+func (u *{{.LowerEntity}}UseCase) FindAll(payload types.FindAllPayload) ([]entities.{{.Entity}}, int, error) {
+	u.InjectOwnScopeFilter(&payload.Pagination, map[string][]any{
+		"created_by": {payload.UserID},
+	}, payload.ActionScope)
+
+	return u.repo.FindAll(payload.Pagination)
 }
 
-func (u *{{.LowerEntity}}UseCase) FindByID(id types.ID) (*entities.{{.Entity}}, error) {
-	return u.{{.LowerEntity}}Repository.FindByID(id)
+// FindByID : Retrieve a single record by ID and check access scope
+func (u *{{.LowerEntity}}UseCase) FindByID(payload types.FindByIDPayload) (*entities.{{.Entity}}, error) {
+	item, err := u.repo.FindByID(payload.ID)
+	if err != nil {
+		return nil, err
+	}
+	return item, u.CheckOwnScope(payload.UserID, item.CreatedBy, payload.ActionScope)
 }
 
-func (u *{{.LowerEntity}}UseCase) Create({{.LowerEntity}} *entities.{{.Entity}}) (*entities.{{.Entity}}, error) {
-	return u.{{.LowerEntity}}Repository.Create({{.LowerEntity}})
+// Create : Insert new record, enforce created_by = UserID
+func (u *{{.LowerEntity}}UseCase) Create(payload types.CreatePayload[entities.{{.Entity}}]) (*entities.{{.Entity}}, error) {
+	payload.Data.ID = types.ID(utils.GenerateUUIDv7())
+
+	if payload.ActionScope == utils.RBAC_SCOPE_OWN {
+		// Enforce ownership for OWN scope; ignore client-provided CreatedBy
+		payload.Data.CreatedBy = payload.UserID
+	}
+
+	return u.repo.Create(payload.Data)
 }
 
-func (u *{{.LowerEntity}}UseCase) Update(id types.ID, {{.LowerEntity}} *entities.{{.Entity}}) (*entities.{{.Entity}}, error) {
-	return u.{{.LowerEntity}}Repository.Update(id, {{.LowerEntity}})
+// Update : Update record with permission check from existing data
+func (u *{{.LowerEntity}}UseCase) Update(payload types.UpdatePayload[entities.{{.Entity}}]) (*entities.{{.Entity}}, error) {
+	existing, err := u.repo.FindByID(payload.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Enforce that only the owner (for OWN scope) can update
+	if err := u.CheckOwnScope(payload.UserID, existing.CreatedBy, payload.ActionScope); err != nil {
+		return nil, err
+	}
+
+	return u.repo.Update(payload.ID, payload.Data)
 }
 
-func (u *{{.LowerEntity}}UseCase) Delete(id types.ID) error {
-	return u.{{.LowerEntity}}Repository.Delete(id)
+// Delete : Delete record, permission checked using existing data
+func (u *{{.LowerEntity}}UseCase) Delete(payload types.DeletePayload) error {
+	if payload.ActionScope == utils.RBAC_SCOPE_OWN {
+		item, err := u.repo.FindByID(payload.ID)
+		if err != nil {
+			return err
+		}
+		if err := u.CheckOwnScope(payload.UserID, item.CreatedBy, payload.ActionScope); err != nil {
+			return err
+		}
+	}
+
+	return u.repo.Delete(payload.ID)
 }

@@ -9,9 +9,8 @@ import (
 )
 
 func Initialize{{.Entity}}Handler(db *gorm.DB) *v1.{{.Entity}}Handler {
-	{{.LowerEntity}}Repository := repositories.New{{.Entity}}Repository(db)
-	{{.LowerEntity}}UseCase := usecases.New{{.Entity}}UseCase({{.LowerEntity}}Repository)
-	{{.LowerEntity}}Handler := v1.New{{.Entity}}Handler({{.LowerEntity}}UseCase)
+	repo := repositories.New{{.Entity}}Repository(db)
+	usecase := usecases.New{{.Entity}}UseCase(repo)
 
-	return {{.LowerEntity}}Handler
+	return v1.New{{.Entity}}Handler(usecase)
 }
