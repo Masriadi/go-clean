@@ -47,7 +47,7 @@ func (u *{{.LowerEntity}}UseCase) FindByID(payload types.FindByIDPayload) (*enti
 func (u *{{.LowerEntity}}UseCase) Create(payload types.CreatePayload[entities.{{.Entity}}]) (*entities.{{.Entity}}, error) {
 	payload.Data.ID = types.ID(utils.GenerateUUIDv7())
 
-	if payload.ActionScope == utils.RBAC_SCOPE_OWN {
+	if payload.ActionScope == constants.RBAC_SCOPE_OWN {
 		// Enforce ownership for OWN scope; ignore client-provided CreatedBy
 		payload.Data.CreatedBy = payload.UserID
 	}
@@ -72,7 +72,7 @@ func (u *{{.LowerEntity}}UseCase) Update(payload types.UpdatePayload[entities.{{
 
 // Delete : Delete record, permission checked using existing data
 func (u *{{.LowerEntity}}UseCase) Delete(payload types.DeletePayload) error {
-	if payload.ActionScope == utils.RBAC_SCOPE_OWN {
+	if payload.ActionScope == constants.RBAC_SCOPE_OWN {
 		item, err := u.repo.FindByID(payload.ID)
 		if err != nil {
 			return err
