@@ -13,6 +13,7 @@ type {{.Entity}}UseCase interface {
 	Create(payload types.CreatePayload[entities.{{.Entity}}]) (*entities.{{.Entity}}, error)
 	Update(payload types.UpdatePayload[entities.{{.Entity}}]) (*entities.{{.Entity}}, error)
 	Delete(payload types.DeletePayload) error
+	BatchDelete(payload types.BatchDeletePayload) error
 }
 
 type {{.LowerEntity}}UseCase struct {
@@ -84,4 +85,21 @@ func (u *{{.LowerEntity}}UseCase) Delete(payload types.DeletePayload) error {
 	}
 
 	return u.repo.Delete(payload.ID)
+}
+
+// BatchDelete : Delete record, permission checked using existing data
+func (u *{{.LowerEntity}}UseCase) BatchDelete(payload types.BatchDeletePayload) error {
+	if payload.ActionScope == constants.RBAC_SCOPE_OWN {
+		for _, id := range payload.IDs {
+			item, err := u.repo.FindByID(id)
+			if err != nil {
+				return err
+			}
+			if err := u.CheckOwnScope(payload.UserID, item.CreatedBy, payload.ActionScope); err != nil {
+				return err
+			}
+		}
+	}
+
+	return u.repo.BatchDelete(payload.IDs)
 }

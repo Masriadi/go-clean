@@ -99,3 +99,21 @@ func (h *{{.Entity}}Handler) Delete(ctx *gin.Context) {
 
 	response.Success(ctx, http.StatusNoContent, nil)
 }
+
+// BatchDelete : Delete multiple {{.LowerEntity}} by IDs
+func (h *{{.Entity}}Handler) BatchDelete(ctx *gin.Context) {
+	var ids []types.ID
+	if !h.BindJSON(ctx, &ids) {
+		return
+	}
+
+	err := h.useCase.BatchDelete(types.BatchDeletePayload{
+		AuthContext: h.GetAuthContext(ctx),
+		IDs:         ids,
+	})
+	if h.HandleError(ctx, err) {
+		return
+	}
+
+	response.Success(ctx, http.StatusNoContent, nil)
+}

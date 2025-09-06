@@ -62,3 +62,12 @@ func (r *{{.LowerEntity}}Repository) Delete(id types.ID) error {
 		ID:    id,
 	})
 }
+
+// BatchDelete : Bulk delete {{.LowerEntity}} by IDs
+func (r *{{.LowerEntity}}Repository) BatchDelete(ids []types.ID) error {
+	return BulkDelete(BulkDeleteOptions{
+		DB:    r.db,
+		Model: &entities.{{.Entity}}{},
+		IDs:   ids,
+	})
+}
